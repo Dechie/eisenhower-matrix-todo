@@ -1,0 +1,7 @@
+so the project expanded unexpectedly.
+
+now applying Task, Person and AllocatedTime models
+for each Task
+
+and implementing a bottomsheet for creating new Task
+which got overly complicated

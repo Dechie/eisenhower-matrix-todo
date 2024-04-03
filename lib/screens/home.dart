@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
+import 'package:provider/provider.dart';
 import 'package:todo/widgets/category_item.dart';
 import 'package:todo/widgets/task_form.dart';
 
-import 'models/task.dart';
+import '../models/task.dart';
+import '../providers/task_provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -15,97 +17,20 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  bool isLoading = false;
-  final _tasksBox = Hive.box('tasks_box');
-
-  List<Task> tasks = [];
-  List<Task> firstCat = [], secondCat = [], thirdCat = [], fourthCat = [];
-
-  Future<void> _addToHive(Task task) async {
-    await _tasksBox.add(task.toMap());
-    print('new task added, tasks length: ${_tasksBox.length}');
-  }
-
-  Future<void> _updateInHive(Task task) async {
-    await _tasksBox.put(task.key, task);
-    _refresh();
-  }
-
-  void _refresh() {
-    isLoading = true;
-    final dataList = _tasksBox.keys.map((key) {
-      final item = _tasksBox.get(key);
-      item["key"] = key;
-      print(item);
-      return Task.fromHiveMap(item);
-    }).toList();
-
-    tasks = dataList;
-    firstCat = tasks
-        .where((task) =>
-            task.importance == Importance.high &&
-            task.urgency == Urgency.urgent)
-        .toList();
-    secondCat = tasks
-        .where((task) =>
-            task.importance == Importance.high &&
-            task.urgency == Urgency.notUrgent)
-        .toList();
-    thirdCat = tasks
-        .where((task) =>
-            task.importance == Importance.low && task.urgency == Urgency.urgent)
-        .toList();
-    fourthCat = tasks
-        .where((task) =>
-            task.importance == Importance.low &&
-            task.urgency == Urgency.notUrgent)
-        .toList();
-    // tasks.forEach((task) {
-    //   // important
-    //   if (task.importance == Importance.high) {
-    //     if (task.urgency == Urgency.urgent && !firstCat.contains(task)) {
-    //       // imprtant and urgent
-    //       firstCat.add(task);
-    //     } else if (task.urgency == Urgency.notUrgent &&
-    //         !secondCat.contains(task)) {
-    //       // important but not urgent
-    //       secondCat.add(task);
-    //     }
-    //   } else if (task.importance == Importance.low) {
-    //     // not important
-    //     if (task.urgency == Urgency.urgent && !thirdCat.contains(task)) {
-    //       // urgent but not important
-    //       thirdCat.add(task);
-    //     } else if (task.urgency == Urgency.notUrgent &&
-    //         !fourthCat.contains(task)) {
-    //       // not urgent and not important
-    //       fourthCat.add(task);
-    //     }
-    //   }
-    // });
-    setState(() {
-      isLoading = false;
-    });
-  }
-
-  void _addTask(Task task) {
-    _addToHive(task);
-    _refresh();
-  }
-
   void _openAddOverlay() {
     showModalBottomSheet(
       useSafeArea: true,
       isScrollControlled: true,
       context: context,
-      builder: (ctx) => TaskForm(onAddTask: _addTask),
+      builder: (ctx) => TaskForm(
+        onAddTask: Provider.of<TaskProvider>(ctx, listen: false).addToHive,
+      ),
     );
   }
 
   @override
   void initState() {
     super.initState();
-    _refresh();
   }
 
   @override
@@ -170,8 +95,6 @@ class _HomePageState extends State<HomePage> {
                       title: 'Quadrant One',
                       subtitle: 'Urgent and Important',
                       ctx: context,
-                      tasks: firstCat,
-                      taskUpdate: _updateInHive,
                       category: Category.one,
                     ),
                     CategoryWidget(
@@ -179,8 +102,6 @@ class _HomePageState extends State<HomePage> {
                       title: 'Quadrant two',
                       subtitle: 'Important, but Not Urgent',
                       ctx: context,
-                      tasks: secondCat,
-                      taskUpdate: _updateInHive,
                       category: Category.two,
                     ),
                     CategoryWidget(
@@ -188,8 +109,6 @@ class _HomePageState extends State<HomePage> {
                       title: 'Quadrant Three',
                       subtitle: 'Urgent, but Not Important',
                       ctx: context,
-                      tasks: thirdCat,
-                      taskUpdate: _updateInHive,
                       category: Category.three,
                     ),
                     CategoryWidget(
@@ -197,8 +116,6 @@ class _HomePageState extends State<HomePage> {
                       title: 'Quadrant Four',
                       subtitle: 'Not Urgent and Not Important',
                       ctx: context,
-                      tasks: fourthCat,
-                      taskUpdate: _updateInHive,
                       category: Category.four,
                     ),
                   ],

@@ -1,28 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:todo/widgets/task_form.dart';
 
 import '../models/task.dart';
+import '../providers/task_provider.dart';
 import '../screens/tasks_list.dart';
 
 class TaskItem extends StatelessWidget {
-  const TaskItem({
+  TaskItem({
     super.key,
     required this.index,
-    required this.colorMap,
     required this.widget,
-    required this.tasks,
-    required this.textColorMap,
+    required this.task,
   });
 
   final int index;
-  final Map<Category, Color> colorMap;
+
   final TaskList widget;
-  final List tasks;
-  final Map<Category, Color> textColorMap;
+  final Task task;
+
+  Map<Category, Color> colorMap = {
+    Category.one: Colors.blue,
+    Category.two: Colors.amber,
+    Category.three: Colors.green,
+    Category.four: Colors.purple,
+  };
+
+  Map<Category, Color> textColorMap = {
+    Category.one: Colors.black,
+    Category.two: Colors.black,
+    Category.three: Colors.white,
+    Category.four: Colors.white,
+  };
 
   @override
   Widget build(BuildContext context) {
+    final taskProvider = Provider.of<TaskProvider>(context, listen: false);
     return PhysicalModel(
       color: Colors.transparent,
       elevation: 5,
@@ -40,7 +54,7 @@ class TaskItem extends StatelessWidget {
         child: ListTile(
           isThreeLine: true,
           title: Text(
-            tasks[index].title,
+            task.title,
             style: GoogleFonts.ubuntu(
               textStyle: TextStyle(
                 fontSize: 18,
@@ -50,7 +64,7 @@ class TaskItem extends StatelessWidget {
             ),
           ),
           subtitle: Text(
-            tasks[index].description,
+            task.description,
             style: GoogleFonts.ubuntu(
               textStyle: TextStyle(
                 fontSize: 16,
@@ -69,8 +83,17 @@ class TaskItem extends StatelessWidget {
                     isScrollControlled: true,
                     context: context,
                     builder: (ctx) => TaskForm(
-                      task: tasks[index],
-                      onEditTask: widget.taskUpdate,
+                      task: task,
+                      onEditTask: (updatedTask) {
+                        final index = taskProvider.tasks
+                            .indexWhere((task) => task.key == updatedTask.key);
+                        if (index != -1) {
+                          // Update the task at the found index
+                          taskProvider.tasks[index] = updatedTask;
+                          // Update the task in Hive
+                          taskProvider.updateInHive(updatedTask);
+                        }
+                      },
                     ),
                   );
                 },
@@ -80,7 +103,9 @@ class TaskItem extends StatelessWidget {
                 ),
               ),
               IconButton(
-                onPressed: () {},
+                onPressed: () {
+                  taskProvider.deleteTask(task);
+                },
                 icon: Icon(
                   Icons.delete,
                   color: textColorMap[widget.category]!.withAlpha(200),

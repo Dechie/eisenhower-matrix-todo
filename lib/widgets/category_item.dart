@@ -11,16 +11,12 @@ class CategoryWidget extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.ctx,
-    required this.tasks,
     required this.category,
-    required this.taskUpdate,
   });
 
   final Color color;
   final String title, subtitle;
   final BuildContext ctx;
-  final List<Task> tasks;
-  final void Function(Task task) taskUpdate;
   final Category category;
 
   @override
@@ -38,9 +34,7 @@ class CategoryWidget extends StatelessWidget {
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (context) => TaskList(
-              tasks: tasks,
               category: category,
-              taskUpdate: taskUpdate,
             ),
           ),
         );

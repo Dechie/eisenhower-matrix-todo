@@ -1,44 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
 import '../models/task.dart';
+import '../providers/task_provider.dart';
 import '../widgets/task_item.dart';
 
 class TaskList extends StatefulWidget {
   const TaskList({
     super.key,
-    required this.tasks,
     required this.category,
-    required this.taskUpdate,
   });
 
-  final List<Task> tasks;
   final Category category;
-  final void Function(Task task) taskUpdate;
 
   @override
   _TaskListState createState() => _TaskListState();
 }
 
 class _TaskListState extends State<TaskList> {
-  late final List tasks;
-  Map<Category, Color> colorMap = {
-    Category.one: Colors.blue,
-    Category.two: Colors.amber,
-    Category.three: Colors.green,
-    Category.four: Colors.purple,
-  };
-
-  Map<Category, Color> textColorMap = {
-    Category.one: Colors.black,
-    Category.two: Colors.black,
-    Category.three: Colors.white,
-    Category.four: Colors.white,
-  };
+  late List<Task> tasks;
   @override
   void initState() {
     super.initState();
-    tasks = widget.tasks;
+    final taskProvider = Provider.of<TaskProvider>(context, listen: false);
+    tasks = taskProvider.getList(widget.category);
+    taskProvider.addListener(() {
+      tasks = taskProvider.getList(widget.category);
+      setState(() {});
+    });
   }
 
   @override
@@ -54,7 +44,7 @@ class _TaskListState extends State<TaskList> {
             child: Column(
               children: [
                 SizedBox(
-                  height: 20,
+                  height: 30,
                   width: double.infinity,
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -91,14 +81,14 @@ class _TaskListState extends State<TaskList> {
                   child: Padding(
                     padding: const EdgeInsets.only(left: 10, right: 10),
                     child: ListView.separated(
-                      itemCount: widget.tasks.length,
-                      itemBuilder: (context, index) => TaskItem(
-                        index: index,
-                        colorMap: colorMap,
-                        widget: widget,
-                        tasks: tasks,
-                        textColorMap: textColorMap,
-                      ),
+                      itemCount: tasks.length,
+                      itemBuilder: (context, index) {
+                        return TaskItem(
+                          index: index,
+                          widget: widget,
+                          task: tasks[index],
+                        );
+                      },
                       separatorBuilder: (context, index) =>
                           const SizedBox(height: 20),
                     ),

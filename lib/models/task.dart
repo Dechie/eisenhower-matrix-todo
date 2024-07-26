@@ -1,35 +1,26 @@
-enum Importance { high, low }
+import 'package:uuid/uuid.dart';
 
-enum Urgency { urgent, notUrgent }
+const uuid = Uuid();
 
 enum Category { one, two, three, four }
 
+enum Importance { high, low }
+
 class Task {
-  const Task({
+  final String id;
+  final String title, description;
+  final int key;
+  final bool completed;
+  final Importance importance;
+  final Urgency urgency;
+  Task({
     required this.title,
     required this.description,
     required this.completed,
     required this.importance,
     required this.urgency,
     this.key = 0,
-  });
-
-  final String title, description;
-  final int key;
-  final bool completed;
-  final Importance importance;
-  final Urgency urgency;
-
-  factory Task.fromMap(Map<String, dynamic> map) {
-    return Task(
-      key: map['key'],
-      title: map['title'],
-      description: map['description'],
-      completed: map['completed'],
-      importance: map['importance'],
-      urgency: map['urgency'],
-    );
-  }
+  }) : id = uuid.v4();
 
   factory Task.fromHiveMap(Map<dynamic, dynamic> map) {
     Map<String, Importance> importanceMap = {
@@ -51,6 +42,17 @@ class Task {
     );
   }
 
+  factory Task.fromMap(Map<String, dynamic> map) {
+    return Task(
+      key: map['key'],
+      title: map['title'],
+      description: map['description'],
+      completed: map['completed'],
+      importance: map['importance'],
+      urgency: map['urgency'],
+    );
+  }
+
   Map<String, dynamic> toMap() {
     return {
       "title": title,
@@ -66,3 +68,5 @@ class Task {
     return '{title: "$title", description: "$description", completed: "$completed", urgency: "${urgency.toString()}", importance: "${importance.toString()}",}';
   }
 }
+
+enum Urgency { urgent, notUrgent }

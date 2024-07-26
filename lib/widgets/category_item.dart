@@ -5,6 +5,11 @@ import 'package:todo/screens/tasks_list.dart';
 import '../models/task.dart';
 
 class CategoryWidget extends StatelessWidget {
+  final Color color;
+
+  final String title, subtitle;
+  final BuildContext ctx;
+  final Category category;
   const CategoryWidget({
     super.key,
     required this.color,
@@ -13,11 +18,6 @@ class CategoryWidget extends StatelessWidget {
     required this.ctx,
     required this.category,
   });
-
-  final Color color;
-  final String title, subtitle;
-  final BuildContext ctx;
-  final Category category;
 
   @override
   Widget build(BuildContext context) {
@@ -67,11 +67,13 @@ class CategoryWidget extends StatelessWidget {
                         Text(
                           title,
                           style: GoogleFonts.ubuntu(
-                            textStyle: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500,
-                              color: textColorMap[category],
-                            ),
+                            textStyle: Theme.of(context)
+                                .textTheme
+                                .headlineMedium!
+                                .copyWith(
+                                  fontWeight: FontWeight.w500,
+                                  color: textColorMap[category],
+                                ),
                           ),
                         ),
                       ],
@@ -82,11 +84,13 @@ class CategoryWidget extends StatelessWidget {
                         Text(
                           subtitle,
                           style: GoogleFonts.ubuntu(
-                            textStyle: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500,
-                              color: textColorMap[category],
-                            ),
+                            textStyle: Theme.of(context)
+                                .textTheme
+                                .headlineMedium!
+                                .copyWith(
+                                  fontWeight: FontWeight.w500,
+                                  color: textColorMap[category],
+                                ),
                           ),
                         ),
                       ],

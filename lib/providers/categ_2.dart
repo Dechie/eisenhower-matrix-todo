@@ -1,18 +1,17 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo/models/task.dart';
+import 'package:todo/providers/categ_1.dart';
 
-import 'categ_2.dart';
 import 'categ_3.dart';
 import 'categ_4.dart';
 import 'util_function.dart';
 
-final categOneProvider = StateNotifierProvider<CategoryOneNotifier, List<Task>>(
-  (ref) => CategoryOneNotifier(),
+final categTwoProvider = StateNotifierProvider<CategoryTwoNotifier, List<Task>>(
+  (ref) => CategoryTwoNotifier(),
 );
 
-class CategoryOneNotifier extends StateNotifier<List<Task>> {
-  CategoryOneNotifier() : super([]);
-
+class CategoryTwoNotifier extends StateNotifier<List<Task>> {
+  CategoryTwoNotifier() : super([]);
   void addOrRemoveItem(Task task) {
     if (state.contains(task)) {
       state = state.where((item) => item.id != task.id).toList();
@@ -31,9 +30,9 @@ class CategoryOneNotifier extends StateNotifier<List<Task>> {
 
     if (inStateCategory == taskCategory) return;
     switch (inStateCategory) {
-      case Category.two:
+      case Category.one:
         state = state.where((test) => test.id != task.id).toList();
-        ref.read(categTwoProvider.notifier).addOrRemoveItem(task);
+        ref.read(categOneProvider.notifier).addOrRemoveItem(task);
         break;
       case Category.three:
         state = state.where((test) => test.id != task.id).toList();

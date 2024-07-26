@@ -4,15 +4,16 @@ import 'package:provider/provider.dart';
 
 import '../models/task.dart';
 import '../providers/task_provider.dart';
+import '../widgets/task_form.dart';
 import '../widgets/task_item.dart';
 
 class TaskList extends StatefulWidget {
+  final Category category;
+
   const TaskList({
     super.key,
     required this.category,
   });
-
-  final Category category;
 
   @override
   _TaskListState createState() => _TaskListState();
@@ -21,20 +22,34 @@ class TaskList extends StatefulWidget {
 class _TaskListState extends State<TaskList> {
   late List<Task> tasks;
   @override
-  void initState() {
-    super.initState();
-    final taskProvider = Provider.of<TaskProvider>(context, listen: false);
-    tasks = taskProvider.getList(widget.category);
-    taskProvider.addListener(() {
-      tasks = taskProvider.getList(widget.category);
-      setState(() {});
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey.shade200,
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.purple,
+        elevation: 8,
+        onPressed: _openAddOverlay,
+        child: PhysicalModel(
+          color: Colors.transparent,
+          child: SizedBox(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: RadialGradient(
+                  colors: [
+                    Colors.purple.withOpacity(0.77),
+                    Colors.purple.withOpacity(0.56),
+                  ],
+                ),
+              ),
+              child: const Icon(
+                Icons.add,
+                color: Colors.white,
+                size: 35,
+              ),
+            ),
+          ),
+        ),
+      ),
       body: SafeArea(
         child: SizedBox(
           width: double.infinity,
@@ -98,6 +113,28 @@ class _TaskListState extends State<TaskList> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    final taskProvider = Provider.of<TaskProvider>(context, listen: false);
+    tasks = taskProvider.getList(widget.category);
+    taskProvider.addListener(() {
+      tasks = taskProvider.getList(widget.category);
+      setState(() {});
+    });
+  }
+
+  void _openAddOverlay() {
+    showModalBottomSheet(
+      useSafeArea: true,
+      isScrollControlled: true,
+      context: context,
+      builder: (ctx) => TaskForm(
+        onAddTask: Provider.of<TaskProvider>(ctx, listen: false).addToHive,
       ),
     );
   }

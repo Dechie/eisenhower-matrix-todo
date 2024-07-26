@@ -15,16 +15,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  void _openAddOverlay() {
-    showModalBottomSheet(
-      useSafeArea: true,
-      isScrollControlled: true,
-      context: context,
-      builder: (ctx) => TaskForm(
-        onAddTask: Provider.of<TaskProvider>(ctx, listen: false).addToHive,
-      ),
-    );
-  }
+  
 
   @override
   void initState() {
@@ -36,31 +27,7 @@ class _HomePageState extends State<HomePage> {
     var size = MediaQuery.of(context).size;
     return Scaffold(
       backgroundColor: Colors.grey.shade200,
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.purple,
-        elevation: 8,
-        onPressed: _openAddOverlay,
-        child: PhysicalModel(
-          color: Colors.transparent,
-          child: SizedBox(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: RadialGradient(
-                  colors: [
-                    Colors.purple.withOpacity(0.77),
-                    Colors.purple.withOpacity(0.56),
-                  ],
-                ),
-              ),
-              child: const Icon(
-                Icons.add,
-                color: Colors.white,
-                size: 35,
-              ),
-            ),
-          ),
-        ),
-      ),
+      
       body: Center(
         child: SizedBox(
           width: size.width * .8,

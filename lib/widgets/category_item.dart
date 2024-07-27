@@ -60,7 +60,7 @@ class CategoryWidget extends StatelessWidget {
                 padding: const EdgeInsets.all(20.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Wrap(
                       children: [
@@ -69,16 +69,15 @@ class CategoryWidget extends StatelessWidget {
                           style: GoogleFonts.ubuntu(
                             textStyle: Theme.of(context)
                                 .textTheme
-                                .headlineMedium!
+                                .titleMedium!
                                 .copyWith(
-                                  fontWeight: FontWeight.w500,
+                                  fontWeight: FontWeight.w700,
                                   color: textColorMap[category],
                                 ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 30),
                     Wrap(
                       children: [
                         Text(
@@ -86,9 +85,9 @@ class CategoryWidget extends StatelessWidget {
                           style: GoogleFonts.ubuntu(
                             textStyle: Theme.of(context)
                                 .textTheme
-                                .headlineMedium!
+                                .bodyMedium!
                                 .copyWith(
-                                  fontWeight: FontWeight.w500,
+                                  fontWeight: FontWeight.w700,
                                   color: textColorMap[category],
                                 ),
                           ),

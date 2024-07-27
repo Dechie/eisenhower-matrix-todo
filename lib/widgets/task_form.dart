@@ -1,78 +1,42 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo/models/task.dart';
+import 'package:todo/providers/riv_provider.dart';
 
-class TaskForm extends StatefulWidget {
+import '../utils/util_function.dart';
+
+enum AddOrEdit { add, edit }
+
+class TaskForm extends ConsumerStatefulWidget {
+  Task? task;
+  final AddOrEdit addOrEdit;
+  final Category category;
   TaskForm({
     super.key,
-    this.onAddTask,
-    this.onEditTask,
     this.task,
+    required this.category,
+    required this.addOrEdit,
   });
 
-  void Function(Task task)? onAddTask;
-  void Function(Task task)? onEditTask;
-  Task? task;
-
   @override
-  State<TaskForm> createState() => _TaskFormState();
+  ConsumerState<TaskForm> createState() => _TaskFormState();
 }
 
-class _TaskFormState extends State<TaskForm> with RestorationMixin {
+class _TaskFormState extends ConsumerState<TaskForm> with RestorationMixin {
   String title = '', description = '';
-  Urgency urgency = Urgency.urgent;
-  Importance importance = Importance.high;
+  late Urgency urgency;
+  late Importance importance;
 
   TextEditingController titleCont = TextEditingController();
   TextEditingController descCont = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
 
-  final RestorableIntN _urgencyIndex = RestorableIntN(1);
-  final RestorableIntN _importanceIndex = RestorableIntN(1);
-
-  @override
-  void dispose() {
-    _urgencyIndex.dispose();
-    _importanceIndex.dispose();
-    super.dispose();
-  }
+  late final RestorableIntN _urgencyIndex;
+  late final RestorableIntN _importanceIndex;
 
   @override
   String get restorationId => 'new_task_widget';
-
-  @override
-  void restoreState(RestorationBucket? oldBucket, bool initialRestore) {
-    registerForRestoration(_urgencyIndex, 'choice_chip');
-    registerForRestoration(_importanceIndex, 'choice_chip');
-  }
-
-  void _submitTask() {
-    if (_formKey.currentState!.validate()) {
-      _formKey.currentState!.save();
-      Task newTask = Task(
-        title: title,
-        description: description,
-        completed: false,
-        importance: importance,
-        urgency: urgency,
-      );
-      print(newTask.toString());
-
-      // perform edit function or create function
-      // based on request
-      widget.task == null
-          ? widget.onAddTask!(newTask)
-          : widget.onEditTask!(newTask);
-
-      Navigator.pop(context);
-    }
-  }
-
-  void _editTask() {
-    if (_formKey.currentState!.validate()) {
-      _formKey.currentState!.save();
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -177,7 +141,7 @@ class _TaskFormState extends State<TaskForm> with RestorationMixin {
                 const SizedBox(height: 50),
                 ElevatedButton(
                   onPressed: _submitTask,
-                  child: Text('Submit'),
+                  child: const Text('Submit'),
                 ),
               ],
             ),
@@ -185,5 +149,71 @@ class _TaskFormState extends State<TaskForm> with RestorationMixin {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _urgencyIndex.dispose();
+    _importanceIndex.dispose();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    var (taskUrgency, taskImportance) =
+        findAttribuesFromCategory(widget.category);
+    urgency = taskUrgency;
+    importance = taskImportance;
+    _urgencyIndex =
+        urgency == Urgency.urgent ? RestorableIntN(1) : RestorableIntN(2);
+    _importanceIndex =
+        importance == Importance.high ? RestorableIntN(1) : RestorableIntN(2);
+    setState(() {});
+  }
+
+  @override
+  void restoreState(RestorationBucket? oldBucket, bool initialRestore) {
+    registerForRestoration(_urgencyIndex, 'choice_chip');
+    registerForRestoration(_importanceIndex, 'choice_chip');
+  }
+
+  void _submitTask() {
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+      Task newTask = Task(
+        title: title,
+        description: description,
+        completed: false,
+        importance: importance,
+        urgency: urgency,
+      );
+      print(newTask.toString());
+
+      // perform edit function or create function
+      // based on request
+      var notifer = ref.read(myTasksProvider.notifier);
+      switch (widget.addOrEdit) {
+        case AddOrEdit.add:
+          bool wasAdded = notifer.addItem(newTask);
+          if (wasAdded) {
+            displaySnackbar(context, "Successfully added task");
+          } else {
+            displaySnackbar(context, "couldn't add task");
+          }
+          Navigator.pop(context, wasAdded);
+          break;
+        case AddOrEdit.edit:
+          bool wasEdited = notifer.editItem(widget.task!, newTask);
+          if (wasEdited) {
+            displaySnackbar(context, "successfully edited task");
+          } else {
+            displaySnackbar(context, "failed to edit task");
+          }
+          Navigator.pop(context, wasEdited);
+          break;
+      }
+    }
   }
 }

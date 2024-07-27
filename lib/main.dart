@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:provider/provider.dart';
-import 'package:todo/providers/task_provider.dart';
+
 import 'screens/home.dart';
 
 void main() async {
@@ -11,11 +11,8 @@ void main() async {
   await Hive.openBox('tasks_box');
 
   runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (context) => TaskProvider()),
-      ],
-      child: const MyApp(),
+    const ProviderScope(
+      child: MyApp(),
     ),
   );
 }

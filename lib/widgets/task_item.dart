@@ -1,32 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
-import 'package:todo/widgets/task_form.dart';
+import 'package:todo/utils/util_function.dart';
 
 import '../models/task.dart';
-import '../providers/task_provider.dart';
 import '../screens/tasks_list.dart';
 
-class TaskItem extends StatelessWidget {
-  TaskItem({
-    super.key,
-    required this.index,
-    required this.widget,
-    required this.task,
-  });
-
+class TaskItem extends ConsumerWidget {
   final int index;
 
   final TaskList widget;
+
   final Task task;
-
-  Map<Category, Color> colorMap = {
-    Category.one: Colors.blue,
-    Category.two: Colors.amber,
-    Category.three: Colors.green,
-    Category.four: Colors.purple,
-  };
-
   Map<Category, Color> textColorMap = {
     Category.one: Colors.black,
     Category.two: Colors.black,
@@ -34,9 +19,19 @@ class TaskItem extends StatelessWidget {
     Category.four: Colors.white,
   };
 
+  final void Function() onRemoveTask;
+  final void Function() onEditTask;
+
+  TaskItem({
+    super.key,
+    required this.index,
+    required this.widget,
+    required this.task,
+    required this.onRemoveTask,
+    required this.onEditTask,
+  });
   @override
-  Widget build(BuildContext context) {
-    final taskProvider = Provider.of<TaskProvider>(context, listen: false);
+  Widget build(BuildContext context, WidgetRef ref) {
     return PhysicalModel(
       color: Colors.transparent,
       elevation: 5,
@@ -45,8 +40,8 @@ class TaskItem extends StatelessWidget {
             borderRadius: BorderRadius.circular(10),
             gradient: LinearGradient(
               colors: [
-                colorMap[widget.category]!.withOpacity(0.85),
-                colorMap[widget.category]!.withOpacity(0.56),
+                matchColorWithCategory(widget.category).withOpacity(0.85),
+                matchColorWithCategory(widget.category).withOpacity(0.56),
               ],
               end: Alignment.centerRight,
               begin: Alignment.centerLeft,
@@ -77,35 +72,14 @@ class TaskItem extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               IconButton(
-                onPressed: () {
-                  showModalBottomSheet(
-                    useSafeArea: true,
-                    isScrollControlled: true,
-                    context: context,
-                    builder: (ctx) => TaskForm(
-                      task: task,
-                      onEditTask: (updatedTask) {
-                        final index = taskProvider.tasks
-                            .indexWhere((task) => task.key == updatedTask.key);
-                        if (index != -1) {
-                          // Update the task at the found index
-                          taskProvider.tasks[index] = updatedTask;
-                          // Update the task in Hive
-                          taskProvider.updateInHive(updatedTask);
-                        }
-                      },
-                    ),
-                  );
-                },
+                onPressed: onEditTask,
                 icon: Icon(
                   Icons.edit,
                   color: textColorMap[widget.category]!.withAlpha(200),
                 ),
               ),
               IconButton(
-                onPressed: () {
-                  taskProvider.deleteTask(task);
-                },
+                onPressed: onRemoveTask,
                 icon: Icon(
                   Icons.delete,
                   color: textColorMap[widget.category]!.withAlpha(200),
